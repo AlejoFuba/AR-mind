@@ -9,11 +9,102 @@
     <!-- libreria mindarjs -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 </head>
-<body>
+<body style="margin: 0; overflow: hidden;">
     <!-- estructura base -->
-    <a-scene>
-        <a-assets></a-assets>
-        <a-camera></a-camera>
+     <!-- se genera la carga del marcador en imagetarget -->
+    <a-scene
+      mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false"
+    >
+    <!-- se cargan los assets -->
+        <a-assets>
+            <!-- precarga de la imagen -->
+            <img id="bg" src="./assets/we-bare-bears.png" />
+            <!-- precarga del modelo 3D -->
+            <a-asset-item id="avatarModel" src="./assets/bear.glb"></a-asset-item>
+            <!-- precarga del video -->
+             <video
+            id="trailerVideo"
+            src="./assets/720video.mp4"
+            preload="auto"
+            loop="true"
+            muted="true"
+            crossorigin="anonymous"
+            playsinline
+            webkit-playsinline
+            ></video>
+            <!-- precarga audio -->
+             <audio id="sonidoAmbiente" src="./assets/sfx.mp3" preload="auto"></audio>
+        </a-assets>
+    <!-- se posiciona la camara -->
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+        <!-- se crea un entity para meter todos los objetos del AR -->
+        <a-entity mindar-image-target="targetIndex: 0">
+            <!-- plano para proyectar la imagen -->
+            <a-plane src="#bg" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane>
+            <!-- modelo 3D -->
+            <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="1 1 1" src="#avatarModel" animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+            <!-- añadimos texto -->
+            <a-text
+                value="Polar"
+                color="#000000"
+                align="center"
+                width="2"
+                position="0 -0.2 0"
+            ></a-text>
+            <!-- video -->
+             <!-- <a-video
+            src="#trailerVideo"
+            position="0 0 0.2"
+            width="1.6"
+            height="0.9"
+            ></a-video> -->
+            <!-- audio -->
+             <a-entity id="audioAmbiente"
+            sound="src: #sonidoAmbiente; loop: true; volume: 0.7; autoplay: false;"
+            ></a-entity>
+        </a-entity>
     </a-scene>
+
+    <!-- script para reproducir video y audio -->
+    <!-- <script>
+  document.querySelector('[mindar-image-target]').addEventListener('targetFound', () => {
+    const video = document.querySelector('#trailerVideo');
+    video.play();
+  });
+
+  document.querySelector('[mindar-image-target]').addEventListener('targetLost', () => {
+    const video = document.querySelector('#trailerVideo');
+    video.pause();
+  });
+</script> -->
+<!-- script para reproducir audios -->
+<script>
+  const marcador = document.querySelector('[mindar-image-target]');
+  const audio = document.querySelector('#audioAmbiente');
+
+  marcador.addEventListener('targetFound', () => {
+    audio.components.sound.playSound();
+  });
+
+  marcador.addEventListener('targetLost', () => {
+    audio.components.sound.pauseSound();
+  });
+</script>
+<div id="overlayInicio" style="position:fixed; inset:0; z-index:10; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+  Toca para activar la experiencia
+</div>
+
+<script>
+  document.querySelector('#overlayInicio').addEventListener('click', function () {
+    const audio = document.querySelector('#audioAmbiente');
+    audio.components.sound.playSound();   // "destraba" el audio con un gesto real
+    audio.components.sound.pauseSound();  // lo dejamos en pausa, listo para que targetFound lo retome
+    this.remove();
+  });
+</script>
 </body>
 </html>
